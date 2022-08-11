@@ -277,8 +277,8 @@ require('nvim-treesitter.configs').setup {
   },
 }
 
-require'lspconfig'.clangd.setup {
-  cmd = { "/opt/homebrew/Cellar/llvm/14.0.6_1/bin/clangd", "--clang-tidy" },
+require('lspconfig').clangd.setup {
+  cmd = { '--query-driver="/opt/homebrew/Cellar/llvm/14.0.6_1/bin/clangd"', '--clang-tidy' },
   capabilities = require("cmp_nvim_lsp").update_capabilities(vim.lsp.protocol.make_client_capabilities())
 }
 
