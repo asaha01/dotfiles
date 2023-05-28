@@ -100,7 +100,41 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-alias desk="cd /Users/abhij/Desktop"
+
 alias texs="cp /Users/abhij/Desktop/Undergrad/main.tex ."
-alias work="cd /Users/abhij/Desktop/Undergrad/Sophomore/Fall"
+alias work="cd /Users/abhij/Desktop/Undergrad/Sophomore/Spring"
 alias cpr="cd /Users/abhij/Desktop/CP"
+alias aoc="cd /Users/abhij/Desktop/CP/AOC/2022"
+
+function cwd {
+  quoted_path="\"$PWD\""
+  pbcopy <<< "$quoted_path"
+}
+
+# memorize tex snippets
+alias mem="nvim /Users/abhij/.local/share/nvim/site/pack/packer/start/vim-snippets/snippets/tex.snippets"
+# cornell ssh login
+alias csshl="ssh as2684@ugclinux.cs.cornell.edu"
+# cornell ssh neovim
+alias cssh="nvim scp://as2684@ugclinux.cs.cornell.edu/"
+
+# opam configuration
+[[ ! -r /Users/abhij/.opam/opam-init/init.zsh ]] || source /Users/abhij/.opam/opam-init/init.zsh  > /dev/null 2> /dev/null
+export NVIM_LISTEN_ADDRESS=/tmp/nvimsocket
+eval "$(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib=$HOME/perl5)"
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/opt/homebrew/anaconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/opt/homebrew/anaconda3/etc/profile.d/conda.sh" ]; then
+        . "/opt/homebrew/anaconda3/etc/profile.d/conda.sh"
+    else
+        export PATH="/opt/homebrew/anaconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+

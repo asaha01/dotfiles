@@ -1,4 +1,4 @@
--- Install packer
+--- Install packer
 local install_path = vim.fn.stdpath 'data' .. '/site/pack/packer/start/packer.nvim'
 local is_bootstrap = false
 if vim.fn.empty(vim.fn.glob(install_path)) > 0 then
@@ -16,22 +16,28 @@ require('packer').startup(function(use)
   use 'scrooloose/nerdtree'                                                       -- File Explorer Tree
   use 'christoomey/vim-tmux-navigator'                                            -- Combine vim and tmux navigation
   use 'numToStr/Comment.nvim'                                                     -- "gc" to comment visual regions/lines
-  use 'bling/vim-bufferline'                                                      -- Buffer tabs
+  -- Nicer "tabs" or buffers
+  use {'akinsho/bufferline.nvim', tag = "v2.*", requires = 'kyazdani42/nvim-web-devicons'}
   use {'ojroques/nvim-bufdel'}                                                    -- Buffer Deletion
   use 'lervag/vimtex'                                                             -- Vimtex
   use 'nvim-treesitter/nvim-treesitter'                                           -- Highlight, edit, and navigate code
   use 'nvim-treesitter/nvim-treesitter-textobjects'                               -- Additional textobjects for treesitter
   use 'neovim/nvim-lspconfig'                                                     -- Collection of configurations for built-in LSP client
-  use 'nvim-treesitter/playground'                                                -- Treesitter AST 
-  use 'williamboman/nvim-lsp-installer'                                           -- Automatically install language servers to stdpath
+  use 'nvim-treesitter/playground'                                                -- Treesitter AST
+  use 'williamboman/mason.nvim'                                                   -- Automatically install language servers to stdpath
+  use 'williamboman/mason-lspconfig.nvim'                                         -- Help with nvim-lspconfig
   use { 'hrsh7th/nvim-cmp', requires = { 'hrsh7th/cmp-nvim-lsp' } }               -- Autocompletion
-  use { 'L3MON4D3/LuaSnip', requires = { 'saadparwaiz1/cmp_luasnip' } }           -- Snippet Engine and Snippet Expansion
-  use 'morhetz/gruvbox'                                                           -- Gruvbox Theme
+  use 'SirVer/ultisnips'                                                          -- Snippet Engine
+  use 'honza/vim-snippets'                                                        -- Vim Snippets
+  use 'tpope/vim-surround'                                                        -- Add/Delete parentheses/brackets
+  use 'rebelot/kanagawa.nvim'                                                     -- Kanagawa Theme
   use 'nvim-lualine/lualine.nvim'                                                 -- Fancier statusline
   use 'lukas-reineke/indent-blankline.nvim'                                       -- Add indentation guides even on blank lines
   use 'tpope/vim-sleuth'                                                          -- Detect tabstop and shiftwidth automatically
-  use { 'nvim-telescope/telescope.nvim', requires = { 'nvim-lua/plenary.nvim' } } -- Fuzzy Finder (files, lsp, etc)
-
+  use 'lewis6991/impatient.nvim'                                                  -- Faster nvim loading
+  use 'nvim-lua/plenary.nvim'                                                     -- Lua functions
+  use 'sbdchd/neoformat'                                                          -- Formatter
+  use 'nvim-telescope/telescope.nvim'                                             -- Fuzzy Finder (files, lsp, etc)
   -- Fuzzy Finder Algorithm which requires local dependencies to be built. Only load if `make` is available
   use { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make', cond = vim.fn.executable "make" == 1 }
 
@@ -62,6 +68,10 @@ vim.api.nvim_create_autocmd('BufWritePost', {
   pattern = vim.fn.expand '$MYVIMRC',
 })
 
+-- Enable impatient for faster startup time
+require('impatient')
+
+
 -- [[ Setting options ]]
 -- See `:help vim.o`
 vim.opt.backspace = { 'indent', 'eol', 'start' }
@@ -69,6 +79,8 @@ vim.o.softtabstop = 4
 vim.o.shiftwidth = 4
 vim.o.tabstop = 4
 vim.o.expandtab = true
+vim.o.wrap = true
+vim.o.linebreak = true
 vim.o.scrolloff = 10
 vim.o.number = true
 vim.o.relativenumber = true
@@ -109,10 +121,11 @@ vim.api.nvim_set_keymap('n', 'gA', ':%y+<CR>', { noremap = true })
 vim.opt.hidden = false
 vim.g.delimitMate_expand_cr = 1
 vim.cmd [[autocmd FileType tex let b:delimitMate_autoclose = 0]]
-
+vim.cmd [[autocmd BufNewFile,BufRead *.hny set syntax=python]]
+vim.g.netrw_banner = 0
 -- Set colorscheme
 vim.o.background = 'dark'
-vim.cmd [[colorscheme gruvbox]]
+vim.cmd[[colorscheme kanagawa]]
 vim.cmd [[highlight! link SignColumn LineNr]]
 
 -- Set completeopt to have a better completion experience
@@ -159,14 +172,25 @@ nnoremap <leader>bp :bprevious<CR>
 nnoremap <leader>bf :bfirst<CR>
 nnoremap <leader>bl :blast<CR>
 nnoremap <leader>bd :BufDel<CR>
+
+" Paste without losing text in paste register
+xnoremap <leader>p "_dP
+
+" delete without yanking
+nnoremap <leader>d "_d
+vnoremap <leader>d "_d
 ]]
+
+-- Set up bufferline
+vim.opt.termguicolors = true
+require("bufferline").setup{}
 
 -- Set lualine as statusline
 -- See `:help lualine.txt`
 require('lualine').setup {
   options = {
     icons_enabled = false,
-    theme = 'gruvbox',
+    theme = 'kanagawa',
     component_separators = '|',
     section_separators = '',
   },
@@ -279,8 +303,13 @@ require('nvim-treesitter.configs').setup {
 
 require('lspconfig').clangd.setup {
   cmd = { '--query-driver="/opt/homebrew/Cellar/llvm/14.0.6_1/bin/clangd"', '--clang-tidy' },
-  capabilities = require("cmp_nvim_lsp").update_capabilities(vim.lsp.protocol.make_client_capabilities())
+  capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol.make_client_capabilities())
 }
+
+require('lspconfig').pyright.setup {
+  capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protocol.make_client_capabilities())
+}
+
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev)
@@ -332,15 +361,26 @@ local on_attach = function(_, bufnr)
 end
 
 -- nvim-cmp supports additional completion capabilities
-local capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
+local capabilities = require('cmp_nvim_lsp').default_capabilities(vim.lsp.protocol.make_client_capabilities())
+
+-- Setup Mason with icons
+require("mason").setup({
+    ui = {
+        icons = {
+            package_installed = "✓",
+            package_pending = "➜",
+            package_uninstalled = "✗"
+        }
+    }
+})
 
 -- Enable the following language servers
-local servers = { 'clangd', 'rust_analyzer', 'pyright', 'tsserver', 'sumneko_lua', 'gopls', 'solc' }
+local servers = { 'clangd', 'rust_analyzer', 'pyright', 'tsserver', 'lua_ls', 'gopls', 'solc' }
 
 -- Ensure the servers above are installed
-require('nvim-lsp-installer').setup {
-  ensure_installed = servers,
-}
+require("mason-lspconfig").setup({
+    ensure_installed = servers
+})
 
 for _, lsp in ipairs(servers) do
   require('lspconfig')[lsp].setup {
@@ -349,14 +389,12 @@ for _, lsp in ipairs(servers) do
   }
 end
 
--- Example custom configuration for lua
---
 -- Make runtime files discoverable to the server
 local runtime_path = vim.split(package.path, ';')
 table.insert(runtime_path, 'lua/?.lua')
 table.insert(runtime_path, 'lua/?/init.lua')
 
-require('lspconfig').sumneko_lua.setup {
+require('lspconfig').lua_ls.setup {
   on_attach = on_attach,
   capabilities = capabilities,
   settings = {
@@ -370,20 +408,20 @@ require('lspconfig').sumneko_lua.setup {
       diagnostics = {
         globals = { 'vim' },
       },
-      workspace = { library = vim.api.nvim_get_runtime_file('', true) },
+      workspace = { library = vim.api.nvim_get_runtime_file('', true), checkThirdParty = false },
       -- Do not send telemetry data containing a randomized but unique identifier
       telemetry = { enable = false, },
     },
   },
 }
+
 -- nvim-cmp setup
 local cmp = require 'cmp'
-local luasnip = require 'luasnip'
 
 cmp.setup {
   snippet = {
     expand = function(args)
-      luasnip.lsp_expand(args.body)
+      vim.fn["UltiSnips#Anon"](args.body)
     end,
   },
   mapping = cmp.mapping.preset.insert {
@@ -397,8 +435,6 @@ cmp.setup {
     ['<Tab>'] = cmp.mapping(function(fallback)
       if cmp.visible() then
         cmp.select_next_item()
-      elseif luasnip.expand_or_jumpable() then
-        luasnip.expand_or_jump()
       else
         fallback()
       end
@@ -406,18 +442,38 @@ cmp.setup {
     ['<S-Tab>'] = cmp.mapping(function(fallback)
       if cmp.visible() then
         cmp.select_prev_item()
-      elseif luasnip.jumpable(-1) then
-        luasnip.jump(-1)
       else
         fallback()
       end
     end, { 'i', 's' }),
   },
-  sources = {
-    { name = 'nvim_lsp' },
-    { name = 'luasnip' },
-  },
+  sources = cmp.config.sources(
+    {
+      { name = 'nvim_lsp' },
+    },
+    {
+      { name = 'ultisnips' },
+    },
+    {
+      { name = 'buffer' },
+    }
+  )
 }
+
+vim.cmd [[
+" custom setting for clangformat
+let g:neoformat_cpp_clangformat = {
+    \ 'exe': 'clang-format',
+    \ 'args': ['--style=Microsoft']
+\}
+let g:neoformat_enabled_cpp = ['clangformat']
+let g:neoformat_enabled_c = ['clangformat']
+]]
+
+-- Ultisnips config
+vim.g.UltiSnipsExpandTrigger="<Tab>"
+vim.g.UltiSnipsJumpForwardTrigger="<Tab>"
+vim.g.UltiSnipsJumpBackwardTrigger="<S-Tab>"
 
 ------------------------------
 -- Language specific config --
@@ -425,15 +481,13 @@ cmp.setup {
 
 -- LaTeX configuration
 vim.g.tex_flavor = 'latex'
-vim.g.vimtex_compiler_progname = 'nvr'
 --vim.g.vimtex_quickfix_latexlog = { fix_paths = 0 }
-vim.g.vimtex_view_method = 'zathura'
+vim.g.vimtex_view_method = 'skim'
+vim.g.vimtex_view_skim_sync = 1
 vim.g.vimtex_quickfix_open_on_warning = 0
-
-vim.opt.printoptions:append{ paper = 'letter' }
-
+vim.g.vimtex_view_skim_activate = 1
+-- vim.opt.printoptions:append{ paper = 'letter' }
 vim.cmd [[autocmd BufNewFile,BufReadPost *.sol set filetype=solidity]]
-
 vim.cmd [[autocmd BufNewFile,BufReadPost *.md set filetype=pandoc]]
 
 vim.g['pandoc#formatting#mode'] = 'h'
