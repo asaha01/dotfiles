@@ -27,6 +27,7 @@ vim.opt.rtp:prepend(lazypath)
 --    as they will be available in your neovim runtime.
 require('lazy').setup({
   -- NOTE: First, some plugins that don't require any configuration
+  'scrooloose/nerdtree',
 
   -- Git related plugins
   'tpope/vim-fugitive',
@@ -208,9 +209,20 @@ vim.o.smartcase = true
 vim.wo.signcolumn = 'no'
 
 -- Miscellaneous
-vim.o.scrolloff = 10
-vim.o.relativenumber = true
+vim.opt.backspace = { 'indent', 'eol', 'start' }
+vim.o.softtabstop = 4
+vim.o.shiftwidth = 4
+vim.o.tabstop = 4
+vim.o.expandtab = true
+vim.o.wrap = true
 vim.o.linebreak = true
+vim.o.scrolloff = 10
+vim.o.number = true
+vim.o.relativenumber = true
+vim.o.ruler = true
+vim.o.showcmd = true
+vim.o.title = true
+vim.o.joinspaces = false
 vim.o.cindent = true
 vim.opt.cinoptions = {'N-s', 'g0', 'j1', '(s', 'm1'}
 vim.opt.hidden = false

@@ -102,13 +102,17 @@ source $ZSH/oh-my-zsh.sh
 
 
 alias texs="cp /Users/abhij/Desktop/Undergrad/main.tex ."
-alias work="cd /Users/abhij/Desktop/Undergrad/Sophomore/Spring"
+alias work="cd /Users/abhij/Desktop/Undergrad/Junior/Fall"
 alias cpr="cd /Users/abhij/Desktop/CP"
 alias aoc="cd /Users/abhij/Desktop/CP/AOC/2022"
 
 function cwd {
   quoted_path="\"$PWD\""
   pbcopy <<< "$quoted_path"
+}
+
+function down {
+  mkdir "$1" && cd "$1" && ../../download_prob.py
 }
 
 # memorize tex snippets
